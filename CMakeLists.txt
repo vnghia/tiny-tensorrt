@@ -47,8 +47,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_ROOT_DIR}/lib/${CMAKE_BUILD_TYPE}"
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_ROOT_DIR}/bin/${CMAKE_BUILD_TYPE}")
 
 # Build option
-option(TINYTRT_BUILD_PYTHON "Compile tiny-tensorrt python api" OFF)
-option(TINYTRT_BUILD_SAMPLE "Build tiny-tensorrt samples" ON)
+option(TRT_BUILD_PYTHON "Compile tiny-tensorrt python api" OFF)
+option(TRT_BUILD_SAMPLE "Build tiny-tensorrt samples" OFF)
 
 # Zlib
 find_package(ZLIB REQUIRED)
@@ -79,7 +79,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC ZLIB::ZLIB
 )
 
-# custom test
-if(BUILD_SAMPLE)
+# Sample
+if(TRT_BUILD_SAMPLE)
   add_subdirectory(samples)
 endif()
