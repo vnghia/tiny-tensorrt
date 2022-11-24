@@ -60,6 +60,20 @@ include(external/spdlog)
 find_package(CUDAToolkit REQUIRED)
 
 # TensorRT
+find_library(LIBNVINFER NAME nvinfer HINTS ${TENSORRT_LIB_PATH} REQUIRED)
+find_library(LIBNVINFER_PLUGIN NAME nvinfer_plugin HINTS ${TENSORRT_LIB_PATH} REQUIRED)
+find_library(LIBNVPARSERS NAME nvparsers HINTS ${TENSORRT_LIB_PATH} REQUIRED)
+find_path(TENSORRT_INCLUDE_DIR NvInfer.h HINTS ${TENSORRT_INCLUDE_PATH})
+
+# Final config
+message(STATUS "
+=============> Final Config <===============
+TensorRT headers: ${TENSORRT_INCLUDE_DIR}
+TensorRT library: ${LIBNVINFER}
+============================================
+")
+
+# Tiny TensorRT
 add_library(${PROJECT_NAME}
   src/cnpy.cpp
   src/Int8Calibrator.cu
@@ -75,10 +89,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/src
   ${spdlog_SOURCE_DIR}/include
+  ${TENSORRT_INCLUDE_DIR}
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ZLIB::ZLIB
   CUDA::cudart
+  nvinfer
+  nvinfer_plugin
+  nvparsers
 )
 
 # Sample
