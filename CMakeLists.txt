@@ -56,6 +56,9 @@ find_package(ZLIB REQUIRED)
 # spdlog
 include(external/spdlog)
 
+# CUDA
+find_package(CUDAToolkit REQUIRED)
+
 # TensorRT
 add_library(${PROJECT_NAME}
   src/cnpy.cpp
@@ -77,6 +80,9 @@ target_include_directories(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   PUBLIC ZLIB::ZLIB
+)
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC CUDA::cudart
 )
 
 # Sample
