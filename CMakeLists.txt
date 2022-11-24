@@ -66,23 +66,19 @@ add_library(${PROJECT_NAME}
   src/Trt.cu
 )
 target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_11)
+
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wno-deprecated -Wfloat-conversion)
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-target_include_directories(${PROJECT_NAME}
-  PUBLIC ${PROJECT_SOURCE_DIR}/
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${PROJECT_SOURCE_DIR}/
+  ${PROJECT_SOURCE_DIR}/src
+  ${spdlog_SOURCE_DIR}/include
 )
-target_include_directories(${PROJECT_NAME}
-  PUBLIC ${PROJECT_SOURCE_DIR}/src
-)
-target_include_directories(${PROJECT_NAME}
-  PUBLIC ${spdlog_SOURCE_DIR}/include
-)
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC ZLIB::ZLIB
-)
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC CUDA::cudart
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ZLIB::ZLIB
+  CUDA::cudart
 )
 
 # Sample
