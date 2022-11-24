@@ -84,7 +84,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC ${spdlog_SOURCE_DIR}/include
 )
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC ZLIB
+  PUBLIC ZLIB::ZLIB
 )
 
 # custom test
