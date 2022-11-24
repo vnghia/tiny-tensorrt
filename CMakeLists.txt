@@ -61,9 +61,6 @@ CUDA Architecture: ${CMAKE_CUDA_ARCHITECTURES}
 ============================================
 ")
 
-include_directories(third_party/spdlog/include)
-include_directories(third_party/pybind11/include)
-
 # TensorRT
 add_library(${PROJECT_NAME}
   src/cnpy.cpp
