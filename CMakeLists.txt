@@ -56,14 +56,6 @@ find_package(ZLIB REQUIRED)
 # spdlog
 include(external/spdlog)
 
-message(STATUS "
-=============> Final Config <===============
-TensorRT headers : ${TENSORRT_INCLUDE_DIR}
-TensorRT library : ${LIBNVINFER}
-CUDA Architecture: ${CMAKE_CUDA_ARCHITECTURES}
-============================================
-")
-
 # TensorRT
 add_library(${PROJECT_NAME}
   src/cnpy.cpp
