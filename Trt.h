@@ -121,14 +121,6 @@ public:
                                 const std::vector<int>& minDimVec,
                                 const std::vector<int>& optDimVec,
                                 const std::vector<int>& maxDimVec);
-    
-    /**
-     * Create engine from onnx model
-     * @onnxModel: path to onnx model
-     * @engineFile: path to saved engien file will be save, if it's empty them will not
-     *              save engine file
-     */
-    void BuildEngine(const std::string& onnxModel, const std::string& engineFile);
 
     /**
      * Deserialize an engine from engineFile

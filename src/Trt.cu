@@ -11,7 +11,6 @@
 
 #include "NvInfer.h"
 #include "NvInferRuntime.h"
-#include "NvOnnxParser.h"
 #include "NvInferPlugin.h"
 #include "NvInferVersion.h"
 
@@ -29,23 +28,6 @@ int GetDevice() {
         spdlog::error("Get Device Error");
         return -1;
     }
-}
-
-void SaveEngine(const std::string& fileName, TrtUniquePtr<nvinfer1::IHostMemory>& plan) {
-    if(fileName == "") {
-        spdlog::warn("empty engine file name, skip save");
-        return;
-    }
-    assert(plan != nullptr);
-    spdlog::info("save engine to {}...",fileName);
-    std::ofstream file;
-    file.open(fileName,std::ios::binary | std::ios::out);
-    if(!file.is_open()) {
-        spdlog::error("read create engine file {} failed",fileName);
-        return;
-    }
-    file.write((const char*)plan->data(), plan->size());
-    file.close();
 }
 
 bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float inRange, float outRange)
@@ -226,66 +208,6 @@ void Trt::AddDynamicShapeProfile(const std::string& inputName,
     mProfile->setDimensions(inputName.c_str(), nvinfer1::OptProfileSelector::kOPT, optDim);
     mProfile->setDimensions(inputName.c_str(), nvinfer1::OptProfileSelector::kMAX, maxDim);
     mIsDynamicShape = true;
-}
-
-void Trt::BuildEngine(
-        const std::string& onnxModel,
-        const std::string& engineFile) {
-    spdlog::info("build onnx engine from {}...",onnxModel);
-    TrtUniquePtr<nvinfer1::IRuntime> runtime{nvinfer1::createInferRuntime(*mLogger)};
-    assert(runtime != nullptr && "create trt runtime failed");
-    auto flag = 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
-    TrtUniquePtr<nvinfer1::INetworkDefinition> network{mBuilder->createNetworkV2(flag)};
-    assert(network != nullptr && "create trt network failed");
-    TrtUniquePtr<nvonnxparser::IParser> parser{nvonnxparser::createParser(*network, *mLogger)};
-    assert(network != nullptr && "create trt onnx parser failed");
-    bool parse_success = parser->parseFromFile(onnxModel.c_str(),
-        static_cast<int>(Severity::kWARNING));
-    assert(parse_success && "parse onnx file failed");
-    if(mCustomOutputs.size() > 0) {
-        spdlog::info("unmark original output...");
-        for(int i=0;i<network->getNbOutputs();i++) {
-            nvinfer1::ITensor* origin_output = network->getOutput(i);
-            network->unmarkOutput(*origin_output);
-        }
-        spdlog::info("mark custom output...");
-        for(int i=0;i<network->getNbLayers();i++) {
-            nvinfer1::ILayer* custom_output = network->getLayer(i);
-            for(int j=0;j<custom_output->getNbOutputs();j++) {
-                nvinfer1::ITensor* output_tensor = custom_output->getOutput(j);
-                for(size_t k=0; k<mCustomOutputs.size();k++) {
-                    std::string layer_name(output_tensor->getName());
-                    if(layer_name == mCustomOutputs[k]) {
-                        network->markOutput(*output_tensor);
-                        break;
-                    }
-                }
-            }
-
-        }
-    }
-    if(mConfig->getFlag(nvinfer1::BuilderFlag::kINT8) && mConfig->getInt8Calibrator() == nullptr) {
-        spdlog::warn("No calibrator found, using fake scale");
-        setTensorDynamicRange(*network, 2.0f, 4.0f);
-    }
-    if(mIsDynamicShape) {
-        assert(mProfile->isValid() && "Invalid dynamic shape profile");
-        mConfig->addOptimizationProfile(mProfile);
-    }
-#if NV_TENSORRT_MAJOR < 8
-    mEngine.reset(mBuilder -> buildEngineWithConfig(*network, *mConfig));
-    TrtUniquePtr<nvinfer1::IHostMemory> plan{mEngine ->serialize()};
-#else
-    TrtUniquePtr<nvinfer1::IHostMemory> plan{mBuilder -> buildSerializedNetwork(*network, *mConfig)};
-    mEngine.reset(runtime -> deserializeCudaEngine(plan->data(), plan->size()));
-#endif
-    assert(mEngine != nullptr && "build trt engine failed");
-    SaveEngine(engineFile, plan);
-    mContext.reset(mEngine->createExecutionContext());
-    assert(mContext != nullptr);
-    CreateDeviceBuffer();
-    mBuilder.reset(nullptr);
-    mConfig.reset(nullptr);
 }
 
 bool Trt::DeserializeEngine(const std::string& engineFile, int dlaCore) {
