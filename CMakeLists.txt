@@ -53,6 +53,9 @@ option(TINYTRT_BUILD_SAMPLE "Build tiny-tensorrt samples" ON)
 # Zlib
 find_package(ZLIB REQUIRED)
 
+# spdlog
+include(external/spdlog)
+
 message(STATUS "
 =============> Final Config <===============
 TensorRT headers : ${TENSORRT_INCLUDE_DIR}
@@ -76,6 +79,9 @@ target_include_directories(${PROJECT_NAME}
 )
 target_include_directories(${PROJECT_NAME}
   PUBLIC ${PROJECT_SOURCE_DIR}/src
+)
+target_include_directories(${PROJECT_NAME}
+  PUBLIC ${spdlog_SOURCE_DIR}/include
 )
 
 # custom test
